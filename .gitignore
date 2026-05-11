@@ -1,6 +1,4 @@
-manifest.txt
-log_distribuido.txt
-log_concorrente.txt
-gabarito_distribuido.csv
-gabarito_concorrente.csv
-cdn_data_logs.zip
+*.txt
+*.csv
+*.zip
+*.o
