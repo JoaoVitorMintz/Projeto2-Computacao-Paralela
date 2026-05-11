@@ -3,7 +3,7 @@
 ## 👥 Alunos
  - João Vitor Garcia Aguiar Mintz
  - Mateus Kage Moya
- - Giovanni Barreiro Castro
+ - Giovanni Barreiro Garitano de Castro
  - Yan Andreotti dos Santos
 
 ## ✅ Objetivos do projeto:
