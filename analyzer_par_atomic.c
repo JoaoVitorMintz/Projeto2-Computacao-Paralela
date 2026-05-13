@@ -163,4 +163,5 @@ int main() {
 /*
 REFERÊNCIAS:
 https://www.ibm.com/docs/pt-br/i/7.6.0?topic=functions-strstr-locate-substring
+https://www.geeksforgeeks.org/c/openmp-hello-world-program/
 */
