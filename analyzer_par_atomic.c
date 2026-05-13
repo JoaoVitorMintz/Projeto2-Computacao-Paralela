@@ -2,42 +2,104 @@
 Pelo que pesquisei, serve para permitir o uso de mais funcionalidades que não fazem parte da biblioteca
 padrão do C, tive que colocar para o CLOCK_MONOTONIC ser definido.
 */
-#define _POSIX_C_SOURCE 199309L 
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <omp.h>
+
 #include "hash_table.h"
+
+#define N 1000
 
 struct timespec inicio, fim;
 
+// Versão que pega só os valores até "-":
+// void insert_in_ht(FILE *file, HashTable *ht) {
+//     char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
+
+//     while(fgets(linha, sizeof(linha), file)) {
+//         char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
+
+//         // EXEMPLO DE LINHA: /css/style-490426ffd727.css
+//         // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo 
+//         if (sscanf(linha, "%99[^-]", URL) == 1) { // Regex para pegar String pré "-"
+//             ht_put(ht, URL);
+//         }
+//     }    
+// }
+
+// Versão caso seja necessário pegar a linha toda:
 void insert_in_ht(FILE *file, HashTable *ht) {
-    char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
+    char linha[N]; // Vetor para armazenar cada linha do arquivo manifest.txt
 
     while(fgets(linha, sizeof(linha), file)) {
-        char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
+        char URL[200]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
 
         // EXEMPLO DE LINHA: /css/style-490426ffd727.css
-        if (sscanf(linha, "%99[^-]", URL) == 1) { // Regex para pegar String pré "-"
+        // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo 
+        if (sscanf(linha, "%199s", URL) == 1) { // Regex para pegar String pré "-"
             ht_put(ht, URL);
         }
     }    
 }
 
-void extrair_urls(FILE *file, HashTable *ht) {
-    char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
+// Versão que pega só os valores até "-":
+// void extrair_urls(FILE *file, HashTable *ht) {
+//     char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
 
-    while(fgets(linha, sizeof(linha), file)) {
-        char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
+//     while(fgets(linha, sizeof(linha), file)) {
+//         char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
+//         char *inicio = strstr(linha, "GET "); // Função que localiza subsequência, localizando primeira ocorrência
+
+//         if (inicio != NULL) {
+//             inicio += 4; // pula o "GET "
+
+//             // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo (/api/data-250ab524602a.api/data)
+//             if (sscanf(inicio, "%99[^-]", URL) == 1) {
+//                 CacheNode *node = ht_get(ht, URL);
+
+//                 if (node != NULL) {
+//                     node->hit_count++;
+//                 }
+//             }
+//         }
+
+//     }
+// }
+
+// Versão caso seja necessário pegar a linha toda:
+void extrair_urls(FILE *file, HashTable *ht) {
+    char linha[N]; // Vetor para armazenar cada linha do arquivo manifest.txt
+
+    char **linhas = (char **)malloc(sizeof(char *) * 1000000);
+
+    int total = 0;
+
+    while(fgets(linha, sizeof(linha), file)){
+        linhas[total] = strdup(linha);
+        total++; // Contador do total das linhas para a alocação no vetor
+    }
+
+    // Processamento Paralelo
+    #pragma omp paralel for
+    for(int t = 0; t < total; t++) {
+        char URL[200]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
         char *inicio = strstr(linha, "GET "); // Função que localiza subsequência, localizando primeira ocorrência
 
         if (inicio != NULL) {
+
             inicio += 4; // pula o "GET "
 
-            if (sscanf(inicio, "%99[^-]", URL) == 1) {
+            // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo (/api/data-250ab524602a.api/data)
+            if (sscanf(inicio, "%199[^ ]", URL) == 1) {
+
                 CacheNode *node = ht_get(ht, URL);
 
                 if (node != NULL) {
+
+                    #pragma omp atomic update
                     node->hit_count++;
                 }
             }
@@ -45,6 +107,11 @@ void extrair_urls(FILE *file, HashTable *ht) {
 
     }
 
+    for(int i = 0; i < total; i++) {
+        free(linhas[i]);
+    }
+
+    free(linhas);
 }
 
 int main() {
@@ -92,3 +159,8 @@ int main() {
 
     return 0;
 }
+
+/*
+REFERÊNCIAS:
+https://www.ibm.com/docs/pt-br/i/7.6.0?topic=functions-strstr-locate-substring
+*/
