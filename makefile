@@ -1,6 +1,9 @@
 CFLAGS = -fopenmp
 
-all: analyzer_seq
+all: analyzer_seq analyzer_par_atomic
 
 analyzer_seq: analyzer_seq.c
 	gcc -O2 $(CFLAGS) analyzer_seq.c hash_table.c -o analyzer_seq
+
+analyzer_par_atomic: analyzer_par_atomic.c
+	gcc -O2 $(CFLAGS) analyzer_par_atomic.c hash_table.c -o analyzer_par_atomic
