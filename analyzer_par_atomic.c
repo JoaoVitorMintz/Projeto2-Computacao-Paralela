@@ -73,7 +73,7 @@ void insert_in_ht(FILE *file, HashTable *ht) {
 void extrair_urls(FILE *file, HashTable *ht) {
     char linha[N]; // Vetor para armazenar cada linha do arquivo manifest.txt
 
-    char **linhas = (char **)malloc(sizeof(char *) * 1000000);
+    char **linhas = (char **)malloc(sizeof(char *) * 12000000);
 
     int total = 0;
 
@@ -83,10 +83,10 @@ void extrair_urls(FILE *file, HashTable *ht) {
     }
 
     // Processamento Paralelo
-    #pragma omp paralel for
+    #pragma omp parallel for
     for(int t = 0; t < total; t++) {
         char URL[200]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
-        char *inicio = strstr(linha, "GET "); // Função que localiza subsequência, localizando primeira ocorrência
+        char *inicio = strstr(linhas[t], "GET "); // Função que localiza subsequência, localizando primeira ocorrência
 
         if (inicio != NULL) {
 
