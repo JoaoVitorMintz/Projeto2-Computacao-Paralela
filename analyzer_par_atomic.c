@@ -2,33 +2,17 @@
 Pelo que pesquisei, serve para permitir o uso de mais funcionalidades que não fazem parte da biblioteca
 padrão do C, tive que colocar para o CLOCK_MONOTONIC ser definido.
 */
-#define _POSIX_C_SOURCE 200809L
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #include <omp.h>
-
 #include "hash_table.h"
 
 #define N 1000
 
 struct timespec inicio, fim;
-
-// Versão que pega só os valores até "-":
-// void insert_in_ht(FILE *file, HashTable *ht) {
-//     char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
-
-//     while(fgets(linha, sizeof(linha), file)) {
-//         char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
-
-//         // EXEMPLO DE LINHA: /css/style-490426ffd727.css
-//         // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo 
-//         if (sscanf(linha, "%99[^-]", URL) == 1) { // Regex para pegar String pré "-"
-//             ht_put(ht, URL);
-//         }
-//     }    
-// }
 
 // Versão caso seja necessário pegar a linha toda:
 void insert_in_ht(FILE *file, HashTable *ht) {
@@ -44,30 +28,6 @@ void insert_in_ht(FILE *file, HashTable *ht) {
         }
     }    
 }
-
-// Versão que pega só os valores até "-":
-// void extrair_urls(FILE *file, HashTable *ht) {
-//     char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
-
-//     while(fgets(linha, sizeof(linha), file)) {
-//         char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
-//         char *inicio = strstr(linha, "GET "); // Função que localiza subsequência, localizando primeira ocorrência
-
-//         if (inicio != NULL) {
-//             inicio += 4; // pula o "GET "
-
-//             // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo (/api/data-250ab524602a.api/data)
-//             if (sscanf(inicio, "%99[^-]", URL) == 1) {
-//                 CacheNode *node = ht_get(ht, URL);
-
-//                 if (node != NULL) {
-//                     node->hit_count++;
-//                 }
-//             }
-//         }
-
-//     }
-// }
 
 // Versão caso seja necessário pegar a linha toda:
 void extrair_urls(FILE *file, HashTable *ht) {
@@ -114,20 +74,24 @@ void extrair_urls(FILE *file, HashTable *ht) {
     free(linhas);
 }
 
-int main() {
+int main(int argc, char **argv) {
     HashTable* ht = ht_create(100000);
 
-    FILE *file_manifest = fopen("manifest.txt", "r");
-    FILE *file_distribuido = fopen("log_distribuido.txt", "r");
-    FILE *file_concorrente = fopen("log_concorrente.txt", "r");
+    // Verifica quantos argv existem (deve haver apenas 2, o numero de threads e o arquivo)
+    if (argc < 2) {
+        printf("Uso: %s <arquivo>\n", argv[0]);
+        return 1;
+    }
 
-    if (file_manifest == NULL || file_distribuido == NULL || file_concorrente == NULL) {
+    FILE *file_manifest = fopen("manifest.txt", "r");
+    FILE *file = fopen(argv[1], "r");
+
+    if (file_manifest == NULL || file == NULL) {
         printf("ERRO: Um dos arquivos não pode ser aberto.");
 
         // Fechando os arquivos que foram abertos:
         if (file_manifest != NULL) fclose(file_manifest);
-        if (file_distribuido != NULL) fclose(file_distribuido);
-        if (file_concorrente != NULL) fclose(file_concorrente);
+        if (file != NULL) fclose(file);
 
         // Destruindo HashTable que não foi usada
         ht_destroy(ht);
@@ -141,8 +105,7 @@ int main() {
     insert_in_ht(file_manifest, ht);
 
     // Lê cada URL coletada e faz o incremento dos valores coletados
-    extrair_urls(file_distribuido, ht);
-    extrair_urls(file_concorrente, ht);
+    extrair_urls(file, ht);
 
     ht_save_results(ht, "results.csv"); // Salva o resultado da hashtable no arquivo 'results.csv'
     clock_gettime(CLOCK_MONOTONIC, &fim);
@@ -152,8 +115,7 @@ int main() {
 
     // Fechando os arquivos que foram abertos:
     fclose(file_manifest);
-    fclose(file_distribuido);
-    fclose(file_concorrente);
+    fclose(file);
 
     ht_destroy(ht);
 

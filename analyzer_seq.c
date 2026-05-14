@@ -51,20 +51,24 @@ void extrair_urls(FILE *file, HashTable *ht) {
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
     HashTable* ht = ht_create(100000);
 
-    FILE *file_manifest = fopen("manifest.txt", "r");
-    FILE *file_distribuido = fopen("log_distribuido.txt", "r");
-    FILE *file_concorrente = fopen("log_concorrente.txt", "r");
+    // Verifica quantos argv existem (deve haver apenas 2, o numero de threads e o arquivo)
+    if (argc < 2) {
+        printf("Uso: %s <arquivo>\n", argv[0]);
+        return 1;
+    }
 
-    if (file_manifest == NULL || file_distribuido == NULL || file_concorrente == NULL) {
+    FILE *file_manifest = fopen("manifest.txt", "r");
+    FILE *file = fopen(argv[1], "r");
+
+    if (file_manifest == NULL || file == NULL) {
         printf("ERRO: Um dos arquivos não pode ser aberto.");
 
         // Fechando os arquivos que foram abertos:
         if (file_manifest != NULL) fclose(file_manifest);
-        if (file_distribuido != NULL) fclose(file_distribuido);
-        if (file_concorrente != NULL) fclose(file_concorrente);
+        if (file != NULL) fclose(file);
 
         // Destruindo HashTable que não foi usada
         ht_destroy(ht);
@@ -78,8 +82,7 @@ int main() {
     insert_in_ht(file_manifest, ht);
 
     // Lê cada URL coletada e faz o incremento dos valores coletados
-    extrair_urls(file_distribuido, ht);
-    extrair_urls(file_concorrente, ht);
+    extrair_urls(file, ht);
 
     ht_save_results(ht, "results.csv"); // Salva o resultado da hashtable no arquivo 'results.csv'
     clock_gettime(CLOCK_MONOTONIC, &fim);
@@ -89,8 +92,7 @@ int main() {
 
     // Fechando os arquivos que foram abertos:
     fclose(file_manifest);
-    fclose(file_distribuido);
-    fclose(file_concorrente);
+    fclose(file);
 
     ht_destroy(ht);
 

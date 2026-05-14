@@ -168,19 +168,27 @@ void processar_log_paralelo(FILE *file, HashTable *ht) {
 /* ─────────────────────────────────────────────────────────────────────────────
  * main
  * ───────────────────────────────────────────────────────────────────────────── */
-int main() {
+int main(int argc, char **argv) {
     /* Cria a tabela hash com 100.000 buckets (mesmo tamanho do sequencial) */
     HashTable *ht = ht_create(100000);
 
-    FILE *file_manifest    = fopen("manifest.txt",       "r");
-    FILE *file_distribuido = fopen("log_distribuido.txt", "r");
-    FILE *file_concorrente = fopen("log_concorrente.txt", "r");
+    // Verifica quantos argv existem (deve haver apenas 2, o numero de threads e o arquivo)
+    if (argc < 2) {
+        printf("Uso: %s <arquivo>\n", argv[0]);
+        return 1;
+    }
 
-    if (file_manifest == NULL || file_distribuido == NULL || file_concorrente == NULL) {
-        printf("ERRO: Um dos arquivos nao pode ser aberto.\n");
-        if (file_manifest    != NULL) fclose(file_manifest);
-        if (file_distribuido != NULL) fclose(file_distribuido);
-        if (file_concorrente != NULL) fclose(file_concorrente);
+    FILE *file_manifest = fopen("manifest.txt", "r");
+    FILE *file = fopen(argv[1], "r");
+
+    if (file_manifest == NULL || file == NULL) {
+        printf("ERRO: Um dos arquivos não pode ser aberto.");
+
+        // Fechando os arquivos que foram abertos:
+        if (file_manifest != NULL) fclose(file_manifest);
+        if (file != NULL) fclose(file);
+
+        // Destruindo HashTable que não foi usada
         ht_destroy(ht);
         return 1;
     }
@@ -195,8 +203,7 @@ int main() {
     insert_in_ht(file_manifest, ht);
 
     /* Fase 2: processamento paralelo dos dois logs */
-    processar_log_paralelo(file_distribuido, ht);
-    processar_log_paralelo(file_concorrente, ht);
+    extrair_urls(file, ht);
 
     /* Fase 3: salvar resultados */
     ht_save_results(ht, "results.csv");
@@ -207,9 +214,9 @@ int main() {
 
     printf("Tempo total: %.4f segundos\n", tempo);
 
+    // Fechando os arquivos que foram abertos:
     fclose(file_manifest);
-    fclose(file_distribuido);
-    fclose(file_concorrente);
+    fclose(file);
     ht_destroy(ht);
 
     return 0;
