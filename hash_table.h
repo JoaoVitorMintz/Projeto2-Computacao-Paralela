@@ -14,6 +14,10 @@ typedef struct CacheNode {
     char* url;                // Chave
     long hit_count;            // Valor (o contador que será incrementado)
     struct CacheNode* next;   // Ponteiro para o próximo nó em caso de colisão
+
+    #ifdef PADDED
+        long padding[5]; 
+    #endif                     // Criação para a execução do padded (no makefile vai ter uma maneira nova de compilar)
 } CacheNode;
 
 /*
