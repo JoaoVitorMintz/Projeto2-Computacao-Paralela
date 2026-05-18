@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
     insert_in_ht(file_manifest, ht);
 
     /* Fase 2: processamento paralelo dos dois logs */
-    extrair_urls(file, ht);
+    processar_log_paralelo(file, ht);
 
     /* Fase 3: salvar resultados */
     ht_save_results(ht, "results.csv");
@@ -218,6 +218,7 @@ int main(int argc, char **argv) {
     fclose(file_manifest);
     fclose(file);
     ht_destroy(ht);
+
 
     return 0;
 }
