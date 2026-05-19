@@ -2,7 +2,7 @@
 Pelo que pesquisei, serve para permitir o uso de mais funcionalidades que não fazem parte da biblioteca
 padrão do C, tive que colocar para o CLOCK_MONOTONIC ser definido.
 */
-#define _POSIX_C_SOURCE 199309L
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    printf("Iniciando análise sequencial:\n");
+    printf("Iniciando análise Paralelo Atomic:\n");
     clock_gettime(CLOCK_MONOTONIC, &inicio);
     
     // Insere URLs coletadas no manifest.txt para a *HashTable
