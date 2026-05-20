@@ -8,7 +8,7 @@ analyzer_seq: analyzer_seq.c
 analyzer_par_atomic: analyzer_par_atomic.c
 	gcc -O2 $(CFLAGS) analyzer_par_atomic.c hash_table.c -o analyzer_par_atomic
 
-analyzer_par_atomic_padded:
+analyzer_par_atomic_padded: analyzer_par_atomic_padded.c
 	gcc -O2 $(CFLAGS) -DPADDED analyzer_par_atomic.c hash_table.c -o analyzer_par_atomic_padded
 
 analyzer_par_critical: analyzer_par_critical.c
