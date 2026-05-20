@@ -28,7 +28,7 @@ void insert_in_ht(FILE *file, HashTable *ht) {
 
 // Versão caso seja necessário pegar a linha toda:
 void extrair_urls(FILE *file, HashTable *ht) {
-    char linha[100]; // Vetor para armazenar cada linha do arquivo manifest.txt
+    char linha[100]; // Vetor para armazenar cada linha do arquivo log
 
     while(fgets(linha, sizeof(linha), file)) {
         char URL[100]; // Pega o tipo de URL (/api, /favicon, /docs e etc...)
@@ -37,8 +37,12 @@ void extrair_urls(FILE *file, HashTable *ht) {
         if (inicio != NULL) {
             inicio += 4; // pula o "GET "
 
-            // TODO: Verificar se deveríamos pegar apenas "/css/style" ou tudo (/api/data-250ab524602a.api/data)
-            if (sscanf(inicio, "%99[^ ]", URL) == 1) {
+            // Verificar se deveríamos pegar apenas "/css/style" ou tudo (/api/data-250ab524602a.api/data)
+            if (sscanf(inicio, "%99[^ ]", URL) == 1) { // ^ significa ler qualquer caracter exceto espaço
+                /*
+                Chamo ht_get, ela me dá um ponteiro (CacheNode *) para um nó (ou NULL).
+                Guardo esse ponteiro em node para poder usar para node->hit_count++.
+                */
                 CacheNode *node = ht_get(ht, URL);
 
 
