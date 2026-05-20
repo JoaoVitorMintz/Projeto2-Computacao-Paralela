@@ -13,3 +13,6 @@ analyzer_par_atomic_padded: analyzer_par_atomic_padded.c
 
 analyzer_par_critical: analyzer_par_critical.c
 	gcc -O2 $(CFLAGS) analyzer_par_critical.c hash_table.c -o analyzer_par_critical
+
+analyzer_par_lock: analyzer_par_lock.c
+    gcc -O2 $(CFLAGS) analyzer_par_lock.c hash_table.c -o analyzer_par_lock
