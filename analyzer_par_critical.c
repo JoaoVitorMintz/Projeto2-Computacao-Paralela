@@ -29,7 +29,7 @@ void processar_log_paralelo(FILE *file, HashTable *ht) {
     long capacidade = 1000000;   // começa reservando espaço para 1 milhão de linhas
     long total      = 0;
 
-    // Array de ponteiros — cada posição vai apontar para uma linha do log
+    // Array de ponteiros -cada posição vai apontar para uma linha do log
     char **linhas = malloc(capacidade * sizeof(char *));
     if (!linhas) {
         perror("Erro ao alocar array de linhas");
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
     struct timespec inicio, fim;
     clock_gettime(CLOCK_MONOTONIC, &inicio);
 
-    // Fase 1: construção da tabela hash — SEMPRE sequencial
+    // Fase 1: construção da tabela hash -SEMPRE sequencial
     insert_in_ht(file_manifest, ht);
 
     // Fase 2: processamento paralelo dos dois logs
